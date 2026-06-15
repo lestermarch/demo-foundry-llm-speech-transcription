@@ -12,7 +12,7 @@ param environmentName string
   'westus'
   'southeastasia'
 ])
-param location string = 'eastus'
+param location string = 'southeastasia'
 
 @description('Object ID of the user / SP running azd. Granted data-plane roles on the Foundry resource so you can hit it locally.')
 param principalId string = ''

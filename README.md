@@ -8,7 +8,7 @@ The app lets you:
 2. Transcribe it using `mai-transcribe-1.5`.
 3. Pick an LLM (e.g. `gpt-4.1`, `gpt-4o-mini`) and have it summarise the transcript.
 
-The frontend uses the **GOV.UK Prototype Kit** for a fast, accessible UI. Infra is provisioned with **azd** (Bicep) into **East US**, one of the four regions currently supporting MAI-Transcribe (alongside `northeurope`, `southeastasia`, and `westus`). `eastus` is chosen because it also has full GPT-5 family availability so a single Foundry resource serves both the speech and summarisation surfaces.
+The frontend uses the **GOV.UK Prototype Kit** for a fast, accessible UI. Infra is provisioned with **azd** (Bicep) into **Southeast Asia**, one of the four regions currently supporting MAI-Transcribe (alongside `northeurope`, `southeastasia`, and `westus`). `southeastasia` is chosen because it also has full GPT-5 family availability so a single Foundry resource serves both the speech and summarisation surfaces.
 
 ---
 
@@ -82,7 +82,7 @@ Both surfaces authenticate with the **same managed identity** (Entra ID, no keys
 
 ## Prerequisites
 
-- **Azure subscription** with quota for AIServices in **East US** (or another MAI-Transcribe region) and for the chosen GPT models.
+- **Azure subscription** with quota for AIServices in **Southeast Asia** (or another MAI-Transcribe region) and for the chosen GPT models.
 - **Azure CLI** ≥ 2.62 (`az login`).
 - **azd** ≥ 1.10 (`azd version`).
 - **Node.js 22 LTS** for local dev of the web app.
@@ -95,7 +95,7 @@ Both surfaces authenticate with the **same managed identity** (Entra ID, no keys
 ```powershell
 azd auth login
 azd env new mai-transcribe-demo
-azd env set AZURE_LOCATION eastus
+azd env set AZURE_LOCATION southeastasia
 azd up
 ```
 
@@ -164,7 +164,7 @@ npm run dev
 - **MAI-Transcribe-1.5 is in public preview** — no SLA, behaviour may change.
 - Diarization, word-level timestamps and custom prompting are not supported by MAI-Transcribe (see the [feature matrix](https://learn.microsoft.com/azure/ai-services/speech-service/mai-transcribe)).
 - The app sends audio to the server which proxies to Azure — secrets/tokens never reach the browser. Audio is held in memory only and not persisted.
-- Region defaults to `eastus`. MAI-Transcribe is currently only available in `eastus`, `northeurope`, `southeastasia`, and `westus`. `northeurope` lacks GPT-5 models in many subscriptions so it would require a second Foundry resource elsewhere — the other three are single-resource-friendly. Set via `azd env set AZURE_LOCATION <region>`.
+- Region defaults to `southeastasia`. MAI-Transcribe is currently only available in `southeastasia`, `northeurope`, `southeastasia`, and `westus`. `northeurope` lacks GPT-5 models in many subscriptions so it would require a second Foundry resource elsewhere — the other three are single-resource-friendly. Set via `azd env set AZURE_LOCATION <region>`.
 
 ---
 
