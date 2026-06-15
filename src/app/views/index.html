@@ -1,0 +1,50 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% set pageName = "Transcribe and summarise audio" %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <h1 class="govuk-heading-xl">Transcribe and summarise audio</h1>
+
+    <p class="govuk-body-l">
+      Upload a WAV recording or record live from your microphone. The audio is
+      transcribed using Microsoft MAI&#8209;Transcribe&#8209;1.5, then you can
+      summarise the result with an AI language model.
+    </p>
+
+    <h2 class="govuk-heading-m">Before you start</h2>
+
+    <ul class="govuk-list govuk-list--bullet">
+      <li>If uploading a file, it must be a WAV audio file.</li>
+      <li>If recording from the microphone, you will need to allow your browser to access it.</li>
+      <li>Do not upload audio that contains sensitive or personal information.</li>
+    </ul>
+
+    {{ govukWarningText({
+      text: "This is a demonstration prototype. It uses a preview API that has no service level agreement. Do not use it for important or time-sensitive work.",
+      iconFallbackText: "Warning"
+    }) }}
+
+    {{ govukButton({
+      text: "Start now",
+      href: "/choose",
+      isStartButton: true
+    }) }}
+
+  </div>
+
+  <div class="govuk-grid-column-one-third">
+    <aside class="app-related-items" role="complementary">
+      <h2 class="govuk-heading-s">About this service</h2>
+      <ul class="govuk-list govuk-list--spaced">
+        <li><a class="govuk-link" href="https://learn.microsoft.com/azure/ai-services/speech-service/" rel="noreferrer noopener">Azure Speech documentation</a></li>
+        <li><a class="govuk-link" href="https://ai.azure.com" rel="noreferrer noopener">Azure AI Foundry portal</a></li>
+      </ul>
+    </aside>
+  </div>
+</div>
+{% endblock %}

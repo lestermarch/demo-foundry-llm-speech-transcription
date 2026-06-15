@@ -1,0 +1,9 @@
+{
+  "serviceName": "MAI-Transcribe Demo",
+  "useServiceNavigation": false,
+  "plugins": {
+    "govuk-frontend": {
+      "rebrand": true
+    }
+  }
+}

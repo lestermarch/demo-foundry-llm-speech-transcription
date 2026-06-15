@@ -1,0 +1,147 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% set pageName = "Record from microphone" %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/choose" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <h1 class="govuk-heading-l">Record from microphone</h1>
+
+    {# ── Browser-capability fallback (visible by default) ─────────────────── #}
+    {# record.js hides this only after confirming MediaRecorder is available.  #}
+    {# Users with JS disabled OR on an unsupported browser both see this panel #}
+    {# and can act on it immediately.                                           #}
+    <div id="browser-fallback" class="govuk-!-margin-bottom-6">
+      <div class="govuk-inset-text">
+        <p class="govuk-body govuk-!-font-weight-bold">
+          Your browser does not support microphone recording.
+        </p>
+        <p class="govuk-body">
+          This page requires JavaScript and a browser with MediaRecorder API
+          support — Chrome 57+, Edge 79+, or Firefox 29+.
+        </p>
+        <p class="govuk-body govuk-!-margin-bottom-0">
+          <a class="govuk-link" href="/upload">Upload a WAV file instead</a>
+        </p>
+      </div>
+    </div>
+
+    {# JS-enabled interface – hidden until record.js initialises #}
+    <div id="recorder-app" class="js-only" hidden>
+
+      {# ── Engine choice + locale ─────────────────────────────────────────── #}
+      {{ govukRadios({
+        idPrefix: "engine",
+        name: "engine",
+        fieldset: {
+          legend: {
+            text: "Transcription engine",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        hint: {
+          text: "All three engines use the same Azure endpoint. Choose based on your accuracy and feature needs."
+        },
+        items: [
+          {
+            value: "fast",
+            text: "Fast Transcription",
+            hint: { text: "Default Speech model. Diarisation, word-level timestamps, phrase list." }
+          },
+          {
+            value: "llm",
+            text: "LLM Speech (enhanced)",
+            hint: { text: "GPT-powered multimodal model. Supports prompt-tuning and translation." }
+          },
+          {
+            value: "mai",
+            text: "MAI-Transcribe-1.5",
+            hint: { text: "Microsoft AI superintelligence team. Highest accuracy on noisy audio. No diarisation. Preview." },
+            checked: true
+          }
+        ]
+      }) }}
+
+      {{ govukTextarea({
+        id: "locale",
+        name: "locale",
+        label: {
+          text: "Locale hint (BCP-47, optional)",
+          classes: "govuk-label--s"
+        },
+        hint: {
+          text: "For example: en-GB, cy-GB, fr-FR. Leave blank to let the service detect the language automatically."
+        },
+        classes: "govuk-!-width-one-third",
+        rows: 2
+      }) }}
+
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+      <p class="govuk-body">
+        Press <strong>Start recording</strong>. When you have finished speaking, press
+        <strong>Stop recording</strong>. You can then review the recording before
+        submitting it for transcription.
+      </p>
+
+      <p class="govuk-body">Your browser will ask permission to use the microphone the first time.</p>
+
+      {# Controls #}
+      <div class="govuk-button-group" id="record-controls">
+        <button class="govuk-button" id="start-btn" type="button">
+          Start recording
+        </button>
+        <button class="govuk-button govuk-button--secondary" id="stop-btn" type="button" disabled aria-disabled="true">
+          Stop recording
+        </button>
+      </div>
+
+      {# Live timer – polite live region so screen readers announce elapsed time #}
+      <p class="govuk-body govuk-!-margin-bottom-2" id="timer-wrap" aria-live="polite" aria-atomic="true" hidden>
+        Recording: <span id="timer-display" class="govuk-tag govuk-tag--red">0:00</span>
+      </p>
+
+      {# Review panel – shown after recording stops #}
+      <div id="review-panel" hidden>
+        <h2 class="govuk-heading-m">Review your recording</h2>
+
+        <audio id="audio-preview"
+               controls
+               class="govuk-!-margin-bottom-4"
+               style="width: 100%"
+               aria-label="Playback of your recording">
+        </audio>
+
+        <div class="govuk-button-group">
+          <button class="govuk-button" id="use-btn" type="button">
+            Use this recording
+          </button>
+          <button class="govuk-button govuk-button--secondary" id="rerecord-btn" type="button">
+            Re-record
+          </button>
+        </div>
+      </div>
+
+      {# Status / progress message – polite so screen readers announce changes #}
+      <p class="govuk-body" id="status-message" aria-live="polite" aria-atomic="true" hidden></p>
+
+      {# Error container – populated by JS if transcription fails #}
+      <div id="error-container" aria-live="assertive" aria-atomic="true"></div>
+
+    </div>{# /recorder-app #}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block pageScripts %}
+<script src="/public/javascripts/record.js"></script>
+{% endblock %}

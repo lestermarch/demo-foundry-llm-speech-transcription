@@ -1,0 +1,106 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/file-upload/macro.njk" import govukFileUpload %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% set pageName = ("Error: " if errorSummary) + "Upload a WAV file" %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/choose" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorSummary %}
+      {{ govukErrorSummary(errorSummary) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Upload a WAV file</h1>
+
+    <p class="govuk-body">
+      The file must be a WAV audio file. Large files may take longer to transcribe.
+    </p>
+
+    <form method="post" action="/upload" enctype="multipart/form-data" novalidate>
+      {# Engine and locale fields come BEFORE the file input so that req.body  #}
+      {# is populated with these values even when multer aborts on LIMIT_FILE_SIZE. #}
+      {% set selectedEngine = engine if engine else "mai" %}
+      {{ govukRadios({
+        idPrefix: "engine",
+        name: "engine",
+        fieldset: {
+          legend: {
+            text: "Transcription engine",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        hint: {
+          text: "All three engines use the same Azure endpoint. Choose based on your accuracy and feature needs."
+        },
+        errorMessage: errors.engine if errors else null,
+        items: [
+          {
+            value: "fast",
+            text: "Fast Transcription",
+            hint: { text: "Default Speech model. Diarisation, word-level timestamps, phrase list." },
+            checked: selectedEngine == "fast"
+          },
+          {
+            value: "llm",
+            text: "LLM Speech (enhanced)",
+            hint: { text: "GPT-powered multimodal model. Supports prompt-tuning and translation." },
+            checked: selectedEngine == "llm"
+          },
+          {
+            value: "mai",
+            text: "MAI-Transcribe-1.5",
+            hint: { text: "Microsoft AI superintelligence team. Highest accuracy on noisy audio. No diarisation. Preview." },
+            checked: selectedEngine == "mai"
+          }
+        ]
+      }) }}
+
+      {{ govukTextarea({
+        id: "locale",
+        name: "locale",
+        label: {
+          text: "Locale hint (BCP-47, optional)",
+          classes: "govuk-label--s"
+        },
+        hint: {
+          text: "For example: en-GB, cy-GB, fr-FR. Leave blank to let the service detect the language automatically."
+        },
+        classes: "govuk-!-width-one-third",
+        rows: 2
+      }) }}
+
+      {{ govukFileUpload({
+        id: "audio",
+        name: "audio",
+        label: {
+          text: "Choose a WAV file",
+          classes: "govuk-label--m"
+        },
+        hint: {
+          text: "WAV format, maximum 200 MB."
+        },
+        errorMessage: errors.audio if errors else null,
+        attributes: {
+          accept: ".wav,audio/wav,audio/x-wav"
+        }
+      }) }}
+
+      {{ govukButton({
+        text: "Transcribe audio",
+        preventDoubleClick: true
+      }) }}
+    </form>
+
+  </div>
+</div>
+{% endblock %}

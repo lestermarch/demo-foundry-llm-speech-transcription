@@ -1,0 +1,51 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+
+{% set pageName = ("Error: " if errorSummary) + "How do you want to provide audio?" %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Back", href: "/" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorSummary %}
+      {{ govukErrorSummary(errorSummary) }}
+    {% endif %}
+
+    <form method="post" action="/choose" novalidate>
+      {{ govukRadios({
+        name: "choice",
+        fieldset: {
+          legend: {
+            text: "How do you want to provide audio?",
+            isPageHeading: true,
+            classes: "govuk-fieldset__legend--l"
+          }
+        },
+        errorMessage: errors.choice if errors else null,
+        items: [
+          {
+            value: "upload",
+            text: "Upload a WAV file",
+            hint: { text: "Choose a file from your computer. It must be in WAV format." }
+          },
+          {
+            value: "record",
+            text: "Record from microphone",
+            hint: { text: "Record audio directly in your browser. You will need to allow microphone access." }
+          }
+        ]
+      }) }}
+
+      {{ govukButton({ text: "Continue" }) }}
+    </form>
+
+  </div>
+</div>
+{% endblock %}

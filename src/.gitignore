@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Environment secrets – never commit these
+.env
+
+# Prototype Kit build output
+.tmp/
+public/
+dist/
+
+# Uploaded / temporary audio files
+tmp/
+uploads/
+
+# Editor / OS artefacts
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Azure
+local.settings.json

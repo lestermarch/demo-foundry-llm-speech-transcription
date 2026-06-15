@@ -1,0 +1,18 @@
+// MAI-Transcribe Demo – custom styles
+// Extends GOV.UK Frontend; do not override core design system tokens.
+// The @import for GOV.UK Frontend settings is handled by the prototype kit's
+// build pipeline, so GOV.UK Frontend functions and brand variables are available.
+
+// ── Related items sidebar ─────────────────────────────────────────────────────
+// Uses a 2 px solid border in the GOV.UK blue (#1d70b8) to match the brand.
+// Hard-coded hex avoids a dependency on the exact SCSS variable name across
+// GOV.UK Frontend major versions.
+.app-related-items {
+  border-top: 2px solid govuk-colour("blue");
+  padding-top: govuk-spacing(3);
+}
+
+// ── Recorder app ──────────────────────────────────────────────────────────────
+// The #recorder-app element starts with the `hidden` HTML attribute.
+// JavaScript removes it after confirming MediaRecorder is supported.
+// No extra CSS is needed here; we rely on the browser's native hidden behaviour.

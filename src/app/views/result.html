@@ -1,0 +1,101 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% set pageName = ("Error: " if errorSummary) + "Your transcript" %}
+
+{# Map engine values to display labels and tag colour classes #}
+{% set engineLabel = {
+  "fast": "Fast Transcription",
+  "llm":  "LLM Speech (enhanced)",
+  "mai":  "MAI-Transcribe-1.5"
+} %}
+{% set engineTagClass = {
+  "fast": "govuk-tag--grey",
+  "llm":  "govuk-tag--purple",
+  "mai":  "govuk-tag--blue"
+} %}
+
+{% block beforeContent %}
+  {{ govukBackLink({ text: "Start again", href: "/choose" }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+
+    <h1 class="govuk-heading-l">
+      Your transcript
+      <span class="govuk-!-margin-left-2">
+        {{ govukTag({
+          text: engineLabel[engine] if engine else "Unknown engine",
+          classes: (engineTagClass[engine] if engine else "govuk-tag--grey") + " govuk-!-font-size-16"
+        }) }}
+      </span>
+    </h1>
+
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {# ── Transcript display ─────────────────────────────────────────────────── #}
+    {# If the engine returned diarised phrases (e.g. Fast Transcription with    #}
+    {# speaker labels), render each speaker turn. Otherwise show the combined   #}
+    {# transcript as a single text block.                                       #}
+    {% if hasSpeakers %}
+      <div class="govuk-inset-text govuk-!-margin-bottom-6">
+        {% for phrase in phrases %}
+          {% if phrase.text %}
+            <p class="govuk-body govuk-!-margin-bottom-2">
+              <strong>{{ phrase.speaker }}:</strong> {{ phrase.text }}
+            </p>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="govuk-inset-text govuk-!-margin-bottom-6">
+        <p class="govuk-body" style="white-space: pre-wrap; word-break: break-word; margin-bottom: 0;">{{ transcript }}</p>
+      </div>
+    {% endif %}
+
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+    <h2 class="govuk-heading-m">Summarise this transcript</h2>
+
+    <p class="govuk-body">
+      Select a model and press <strong>Summarise</strong>. A plain English summary
+      with key points will appear on the next page.
+    </p>
+
+    {% if errorSummary %}
+      {{ govukErrorSummary(errorSummary) }}
+    {% endif %}
+
+    <form method="post" action="/result" novalidate>
+      {{ govukRadios({
+        idPrefix: "model",
+        name: "model",
+        fieldset: {
+          legend: {
+            text: "Which model do you want to use?",
+            classes: "govuk-fieldset__legend--s"
+          }
+        },
+        errorMessage: errors.model if errors else null,
+        items: modelItems
+      }) }}
+
+      {{ govukButton({
+        text: "Summarise",
+        preventDoubleClick: true
+      }) }}
+    </form>
+
+  </div>
+</div>
+{% endblock %}
