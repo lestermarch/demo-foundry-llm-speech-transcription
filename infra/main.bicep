@@ -6,13 +6,13 @@ targetScope = 'subscription'
 param environmentName string
 
 @minLength(1)
-@description('Azure region for all resources. MAI-Transcribe-1.5 requires an LLM-Speech-capable region.')
+@description('Azure region for all resources. MAI-Transcribe-1.5 is currently only available in eastus, northeurope, southeastasia, and westus. northeurope lacks gpt-5 family models, so for a single-resource demo prefer eastus, westus, or southeastasia.')
 @allowed([
-  'swedencentral'
-  'eastus2'
-  'westus3'
+  'eastus'
+  'westus'
+  'southeastasia'
 ])
-param location string = 'swedencentral'
+param location string = 'eastus'
 
 @description('Object ID of the user / SP running azd. Granted data-plane roles on the Foundry resource so you can hit it locally.')
 param principalId string = ''
