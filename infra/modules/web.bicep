@@ -43,10 +43,11 @@ resource app 'Microsoft.Web/sites@2024-04-01' = {
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
       http20Enabled: true
-      appCommandLine: 'npm start'
+      appCommandLine: 'bash -c "cd /home/site/wwwroot && (test -d node_modules || npm install --omit=dev --no-audit --no-fund --no-progress) && npm start"'
       appSettings: [
         { name: 'SCM_DO_BUILD_DURING_DEPLOYMENT', value: 'true' }
         { name: 'WEBSITE_NODE_DEFAULT_VERSION', value: '~22' }
+        { name: 'WEBSITES_CONTAINER_START_TIME_LIMIT', value: '600' }
         { name: 'NODE_ENV', value: 'development' }
         { name: 'IS_UNRESTRICTED', value: 'true' }
         { name: 'AZURE_CLIENT_ID', value: identityClientId }
