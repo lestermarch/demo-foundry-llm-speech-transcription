@@ -55,7 +55,7 @@ async function getBearerToken () {
  * The engine value controls which Azure Speech mode is activated:
  *
  *   fast – no enhancedMode (standard Speech model)
- *   llm  – enhancedMode.enabled = true (LLM Speech, no explicit model name)
+ *   llm  – enhancedMode.enabled = true, task = 'transcribe' (LLM Speech)
  *   mai  – enhancedMode.enabled = true, model = 'mai-transcribe-1.5'
  *
  * @param {string} engine  - One of 'fast' | 'llm' | 'mai'
@@ -66,7 +66,7 @@ function buildDefinition (engine, locale) {
   const def = {}
   if (locale && locale.trim()) def.locales = [locale.trim()]
   if (engine === 'llm') {
-    def.enhancedMode = { enabled: true }
+    def.enhancedMode = { enabled: true, task: 'transcribe' }
   } else if (engine === 'mai') {
     def.enhancedMode = { enabled: true, model: 'mai-transcribe-1.5' }
   }
