@@ -8,6 +8,9 @@ param speechEndpoint string
 param inferenceEndpoint string
 param availableModels string
 
+@secure()
+param password string
+
 resource plan 'Microsoft.Web/serverfarms@2024-04-01' = {
   name: planName
   location: location
@@ -52,6 +55,8 @@ resource app 'Microsoft.Web/sites@2024-04-01' = {
         { name: 'SPEECH_ENDPOINT', value: speechEndpoint }
         { name: 'FOUNDRY_INFERENCE_ENDPOINT', value: inferenceEndpoint }
         { name: 'AVAILABLE_MODELS', value: availableModels }
+        { name: 'PASSWORD', value: password }
+        { name: 'USE_HTTPS', value: 'false' }
       ]
     }
   }

@@ -96,6 +96,7 @@ Both surfaces authenticate with the **same managed identity** (Entra ID, no keys
 azd auth login
 azd env new mai-transcribe-demo
 azd env set AZURE_LOCATION swedencentral
+azd env set PASSWORD "<choose a strong password>"
 azd up
 ```
 

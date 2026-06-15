@@ -17,6 +17,11 @@ param location string = 'swedencentral'
 @description('Object ID of the user / SP running azd. Granted data-plane roles on the Foundry resource so you can hit it locally.')
 param principalId string = ''
 
+@secure()
+@minLength(8)
+@description('Password gating the GOV.UK Prototype Kit in production. Set via `azd env set PASSWORD <value>` before `azd provision`.')
+param password string
+
 @description('Models to deploy on the Foundry account. Each becomes a deployment with name == model name. Adjust `version` to a valid version listed in the Foundry portal if deployment fails.')
 param models array = [
   {
@@ -94,6 +99,7 @@ module web 'modules/web.bicep' = {
     speechEndpoint: foundry.outputs.speechEndpoint
     inferenceEndpoint: foundry.outputs.inferenceEndpoint
     availableModels: join(map(models, m => m.name), ',')
+    password: password
   }
 }
 
