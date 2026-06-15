@@ -20,8 +20,8 @@ param principalId string = ''
 @description('Models to deploy on the Foundry account. Each becomes a deployment with name == model name. Adjust `version` to a valid version listed in the Foundry portal if deployment fails.')
 param models array = [
   {
-    name: 'gpt-5.5'
-    version: '2026-04-24'
+    name: 'gpt-5.4'
+    version: '2026-03-05'
     format: 'OpenAI'
     skuName: 'GlobalStandard'
     capacity: 50

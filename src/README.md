@@ -74,7 +74,7 @@ Edit `.env` and fill in the values:
 |---|---|
 | `SPEECH_ENDPOINT` | Base URL of your Azure Cognitive Services / AI Foundry resource, e.g. `https://my-resource.cognitiveservices.azure.com` |
 | `FOUNDRY_INFERENCE_ENDPOINT` | Inference URL, e.g. `https://my-resource.services.ai.azure.com/models` |
-| `AVAILABLE_MODELS` | Comma-separated deployment names, e.g. `gpt-5.5,gpt-5.4-nano` |
+| `AVAILABLE_MODELS` | Comma-separated deployment names, e.g. `gpt-5.4,gpt-5.4-nano` |
 
 Authentication uses `DefaultAzureCredential`. For local development the easiest option is to run `az login` with an account that has the **Cognitive Services User** role on your Foundry resource.
 
@@ -99,7 +99,7 @@ Set these in **Configuration → Application settings** (full table including th
 |---|---|---|
 | `SPEECH_ENDPOINT` | Yes | `https://<resource>.cognitiveservices.azure.com` |
 | `FOUNDRY_INFERENCE_ENDPOINT` | Yes | `https://<resource>.services.ai.azure.com/models` |
-| `AVAILABLE_MODELS` | Yes | Comma-separated deployment names, e.g. `gpt-5.5,gpt-5.4-nano` |
+| `AVAILABLE_MODELS` | Yes | Comma-separated deployment names, e.g. `gpt-5.4,gpt-5.4-nano` |
 | `NODE_ENV` | Yes | Set to `production` |
 | `USE_HTTPS` | Yes | Set to `false` (TLS terminated externally by App Service) |
 | `PASSWORD` | **Yes** | Any value — see warning below |
@@ -126,7 +126,7 @@ The kit's built-in basic-auth middleware gates every route (except the managemen
 |---|---|
 | `SPEECH_ENDPOINT` | `https://<resource>.cognitiveservices.azure.com` |
 | `FOUNDRY_INFERENCE_ENDPOINT` | `https://<resource>.services.ai.azure.com/models` |
-| `AVAILABLE_MODELS` | `gpt-5.5,gpt-5.4-nano` (your model deployments) |
+| `AVAILABLE_MODELS` | `gpt-5.4,gpt-5.4-nano` (your model deployments) |
 | `NODE_ENV` | `production` |
 | `USE_HTTPS` | `false` – Azure App Service terminates TLS externally; the kit must not try to redirect internally |
 | `PASSWORD` | A strong password to protect the prototype. **Required** — the kit blocks all routes without it in production. |
@@ -143,7 +143,7 @@ In the [Azure AI Foundry portal](https://ai.azure.com):
 ### Find your model deployment names
 
 1. Go to **Deployments** in the Foundry portal.
-2. Copy the deployment names (e.g. `gpt-5.5`, `gpt-5.4-nano`).
+2. Copy the deployment names (e.g. `gpt-5.4`, `gpt-5.4-nano`).
 3. Set these as a comma-separated list in `AVAILABLE_MODELS`.
 
 ---

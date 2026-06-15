@@ -125,7 +125,7 @@ The Bicep wires the App Service with these app settings (also handy for local `.
 | --- | --- | --- |
 | `SPEECH_ENDPOINT` | `https://aif-abcd1234.cognitiveservices.azure.com` | Base URL for the Speech REST call |
 | `FOUNDRY_INFERENCE_ENDPOINT` | `https://aif-abcd1234.services.ai.azure.com/models` | Base URL for chat completions |
-| `AVAILABLE_MODELS` | `gpt-5.5,gpt-5.4-nano` | Comma-separated list shown on the summarise page |
+| `AVAILABLE_MODELS` | `gpt-5.4,gpt-5.4-nano` | Comma-separated list shown on the summarise page |
 | `AZURE_CLIENT_ID` | (GUID) | Client ID of the user-assigned MI for `DefaultAzureCredential` |
 
 To change which LLMs are offered, edit the `models` array in `infra/main.bicep` and re-run `azd provision`.
@@ -140,7 +140,7 @@ npm install
 # point at the deployed Foundry resource:
 $env:SPEECH_ENDPOINT = (azd env get-values | Select-String '^SPEECH_ENDPOINT').ToString().Split('=')[1].Trim('"')
 $env:FOUNDRY_INFERENCE_ENDPOINT = (azd env get-values | Select-String '^FOUNDRY_INFERENCE_ENDPOINT').ToString().Split('=')[1].Trim('"')
-$env:AVAILABLE_MODELS = "gpt-5.5,gpt-5.4-nano"
+$env:AVAILABLE_MODELS = "gpt-5.4,gpt-5.4-nano"
 npm run dev
 ```
 
@@ -153,7 +153,7 @@ npm run dev
 1. Open the deployed site → **Start**.
 2. Choose **Upload a WAV file**. Pick a short clip (≤ 5 mins is fine, ≤ 300 MB hard limit). Submit.
 3. The transcript appears (one call to `/speechtotext/transcriptions:transcribe` with `enhancedMode.mai-transcribe-1.5`).
-4. Pick **gpt-5.5** → **Summarise**. The summary streams back from the Foundry inference endpoint on the same resource.
+4. Pick **gpt-5.4** → **Summarise**. The summary streams back from the Foundry inference endpoint on the same resource.
 5. Back to the start, this time **Record from microphone**. Speak for ~20 seconds, stop, **Use this recording**. Same flow.
 6. Show the audience the Azure portal: a single AI Foundry resource, project with GPT deployments, no separate Speech resource.
 
