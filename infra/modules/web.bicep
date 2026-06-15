@@ -47,6 +47,8 @@ resource app 'Microsoft.Web/sites@2024-04-01' = {
       appSettings: [
         { name: 'SCM_DO_BUILD_DURING_DEPLOYMENT', value: 'true' }
         { name: 'WEBSITE_NODE_DEFAULT_VERSION', value: '~22' }
+        { name: 'NODE_ENV', value: 'development' }
+        { name: 'IS_UNRESTRICTED', value: 'true' }
         { name: 'AZURE_CLIENT_ID', value: identityClientId }
         { name: 'SPEECH_ENDPOINT', value: speechEndpoint }
         { name: 'FOUNDRY_INFERENCE_ENDPOINT', value: inferenceEndpoint }
