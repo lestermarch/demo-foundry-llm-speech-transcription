@@ -30,15 +30,17 @@ audio=@meeting.wav
 definition={"enhancedMode":{"enabled":true,"model":"mai-transcribe-1.5"}}
 ```
 
-A single AI Foundry (AIServices) account exposes three surfaces, all under one managed identity:
+A single AI Foundry (AIServices) account exposes everything this demo needs under one managed identity:
 
 | Surface | Hostname pattern | Used for |
 | --- | --- | --- |
 | Speech REST | `{account}.cognitiveservices.azure.com/speechtotext/...` | Fast / LLM Speech / MAI-Transcribe |
-| Azure OpenAI | `{account}.openai.azure.com/openai/deployments/{name}/...` | `gpt-5.4`, `gpt-5.4-nano` (any OpenAI-format model) |
-| Foundry inference | `{account}.services.ai.azure.com/models` | Non-OpenAI models (e.g. Mistral, Cohere, MAI inference models) |
+| Azure OpenAI data-plane | `{account}.openai.azure.com/openai/deployments/{name}/...` | `gpt-5.4`, `gpt-5.4-nano` chat completions (this demo) |
+| Foundry Models inference | `{account}.services.ai.azure.com/openai/...` (OpenAI-compatible) | Newer OpenAI-compatible route to Foundry-deployed models, including some non-OpenAI ones. Not used by this demo — see below |
 
-This demo uses the first two. Authentication is **Entra ID only** — no API keys anywhere in the stack.
+> The legacy Azure AI Inference SDK route (`/models/chat/completions`) is being phased out — the current Foundry docs recommend OpenAI-compatible endpoints instead. This demo calls the GA Azure OpenAI data-plane (`/openai/deployments/...`) directly with `fetch`.
+
+The app uses **Entra ID only** (managed identity) — no API keys are stored or used by the app. Key-based auth is left enabled on the account (`disableLocalAuth: false`) so you can still use the portal playground; harden this if you want a stronger guarantee.
 
 ---
 
@@ -170,7 +172,7 @@ $env:AVAILABLE_MODELS         = "gpt-5.4,gpt-5.4-nano"
 npm run dev
 ```
 
-`DefaultAzureCredential` will use your `az login` identity locally. `azd up` grants the deploying user `Cognitive Services User` on the account and `Azure AI User` on the project, so calls succeed without further setup.
+`DefaultAzureCredential` will use your `az login` identity locally. `azd up` grants the deploying user `Cognitive Services User` on the account and `Foundry User` on the project (the role formerly known as `Azure AI User` — same role ID `53ca6127-db72-4b80-b1b0-d745d6d5456d`), so calls succeed without further setup.
 
 ---
 
@@ -179,9 +181,9 @@ npm run dev
 1. Open the deployed site → **Start**.
 2. Choose **Upload a WAV file**, pick a short clip (≤ 5 mins, ≤ 300 MB).
 3. Pick a transcription engine — try all three to compare:
-   - **Fast** — speaker labels (diarization), word-level timestamps.
-   - **LLM Speech** — punctuation, formatting, multilingual.
-   - **MAI-Transcribe 1.5** — Microsoft's latest STT, multilingual, no diarization.
+   - **Fast** — word-level timestamps; add `diarization: { enabled: true, maxSpeakers: N }` to the `definition` body if you want speaker labels (this demo posts an empty definition, so no diarization).
+   - **LLM Speech** — punctuation, formatting, multilingual, optional prompt-tuning.
+   - **MAI-Transcribe 1.5** — Microsoft's latest STT, multilingual, no diarization, no word-level timestamps.
 4. Pick **`gpt-5.4`** → **Summarise**. The summary comes back from the OpenAI surface on the same Foundry resource.
 5. Go back, this time **Record from microphone**. Speak for ~20 s, stop, **Use this recording**. Same flow.
 6. Show the audience the Azure portal: a single AI Foundry resource, project with the two GPT deployments, and **no separate Speech or OpenAI resource**.
@@ -194,8 +196,8 @@ npm run dev
   - `buildDefinition(engine, locale)` is the entire branching logic in ~10 lines.
   - `transcribeAudio()` wraps it with multipart construction and a single Entra-authenticated `fetch` to the `cognitiveservices.azure.com` host.
 - **Summarisation** — `src/lib/azure-ai.js`
-  - Direct `fetch` to `{account}.openai.azure.com/openai/deployments/{model}/chat/completions`.
-  - Cached MI token via `@azure/identity` (`DefaultAzureCredential`).
+  - Direct `fetch` to the GA Azure OpenAI data-plane: `{account}.openai.azure.com/openai/deployments/{model}/chat/completions?api-version=2024-10-21`.
+  - Cached MI token via `@azure/identity` (`DefaultAzureCredential`), scope `https://cognitiveservices.azure.com/.default` (the same scope works for the Speech surface, so token reuse is trivial). Newer OpenAI-compatible Foundry examples use `https://ai.azure.com/.default` — if you switch to those endpoints, switch scopes too.
   - Note: gpt-5.x rejects `max_tokens` (use `max_completion_tokens`) and does not allow `temperature` overrides — the code reflects this.
 
 ---
