@@ -43,7 +43,7 @@ resource app 'Microsoft.Web/sites@2024-04-01' = {
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
       http20Enabled: true
-      appCommandLine: 'bash -c "cd /home/site/wwwroot && (test -d node_modules || npm install --omit=dev --no-audit --no-fund --no-progress) && npm start"'
+      appCommandLine: 'bash -c "cd /home/site/wwwroot && npm install --omit=dev --no-audit --no-fund --no-progress && npm start"'
       appSettings: [
         { name: 'SCM_DO_BUILD_DURING_DEPLOYMENT', value: 'true' }
         { name: 'WEBSITE_NODE_DEFAULT_VERSION', value: '~22' }
