@@ -21,14 +21,14 @@ param principalId string = ''
 param models array = [
   {
     name: 'gpt-5.5'
-    version: '2026-03-01'
+    version: '2026-04-24'
     format: 'OpenAI'
     skuName: 'GlobalStandard'
     capacity: 50
   }
   {
     name: 'gpt-5.4-nano'
-    version: '2026-02-01'
+    version: '2026-03-17'
     format: 'OpenAI'
     skuName: 'GlobalStandard'
     capacity: 100
