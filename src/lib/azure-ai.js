@@ -3,8 +3,18 @@
 /**
  * azure-ai.js
  *
- * Calls the Azure AI Foundry inference endpoint via the
- * @azure-rest/ai-inference package to summarise a transcript.
+ * Calls the Azure OpenAI chat-completions endpoint exposed on the same
+ * Foundry account that hosts the Speech surface (one account, two surfaces).
+ *
+ * Why not the Azure AI Inference / model-router endpoint?
+ *   The OpenAI gpt-5.x models deployed here are OpenAI-format only and aren't
+ *   served by the {account}.services.ai.azure.com/models surface — that path
+ *   returns 401/404 for them. The OpenAI-flavoured surface at
+ *   {account}.openai.azure.com/openai/deployments/{deployment}/chat/completions
+ *   accepts the same managed-identity bearer token.
+ *
+ * gpt-5.x quirks: max_tokens is rejected (use max_completion_tokens) and
+ * the temperature parameter must be omitted (only the default is supported).
  *
  * The model name must appear in the AVAILABLE_MODELS environment variable
  * (comma-separated). If it does not, a 400 error is thrown before any
@@ -12,6 +22,40 @@
  *
  * Authentication: DefaultAzureCredential (same identity as azure-speech.js).
  */
+
+const OPENAI_API_VERSION = '2024-10-21'
+const TOKEN_SCOPE = 'https://cognitiveservices.azure.com/.default'
+const TOKEN_REFRESH_SKEW_MS = 5 * 60 * 1000
+
+let cachedToken = null
+let cachedTokenExpiry = 0
+let credentialSingleton = null
+
+function getCredential () {
+  if (!credentialSingleton) {
+    const { DefaultAzureCredential } = require('@azure/identity')
+    credentialSingleton = new DefaultAzureCredential()
+  }
+  return credentialSingleton
+}
+
+async function getAccessToken () {
+  const now = Date.now()
+  if (cachedToken && now < cachedTokenExpiry - TOKEN_REFRESH_SKEW_MS) {
+    return cachedToken
+  }
+  const credential = getCredential()
+  const tokenResponse = await credential.getToken(TOKEN_SCOPE)
+  if (!tokenResponse || !tokenResponse.token) {
+    throw Object.assign(
+      new Error('Failed to acquire access token for Azure OpenAI'),
+      { status: 500 }
+    )
+  }
+  cachedToken = tokenResponse.token
+  cachedTokenExpiry = tokenResponse.expiresOnTimestamp
+  return cachedToken
+}
 
 /**
  * Returns the list of permitted model names from env, trimmed and non-empty.
@@ -25,11 +69,11 @@ function getAvailableModels () {
 }
 
 /**
- * Summarises a transcript using an Azure AI Foundry chat-completions model.
+ * Summarises a transcript using an Azure OpenAI chat-completions deployment.
  *
  * @param {object} opts
  * @param {string} opts.transcript  - Full transcript text
- * @param {string} opts.model       - Model deployment name (must be in AVAILABLE_MODELS)
+ * @param {string} opts.model       - Deployment name (must be in AVAILABLE_MODELS)
  * @returns {Promise<string>}       - The summary text from the model
  */
 async function summariseTranscript ({ transcript, model } = {}) {
@@ -65,48 +109,42 @@ async function summariseTranscript ({ transcript, model } = {}) {
     )
   }
 
-  // Lazy-require the Azure AI Inference SDK.
-  // @azure-rest/ai-inference uses a default export (factory function).
-  const aiInferenceModule = require('@azure-rest/ai-inference')
-  const ModelClient = aiInferenceModule.default || aiInferenceModule
+  const baseUrl = endpoint.replace(/\/+$/, '')
+  const url = `${baseUrl}/openai/deployments/${encodeURIComponent(model)}/chat/completions?api-version=${OPENAI_API_VERSION}`
 
-  const { DefaultAzureCredential } = require('@azure/identity')
+  const token = await getAccessToken()
 
-  const client = ModelClient(
-    endpoint,
-    new DefaultAzureCredential(),
-    {
-      // Tell the Azure pipeline which audience to request a token for.
-      credentialScopes: ['https://cognitiveservices.azure.com/.default']
-    }
-  )
+  const body = {
+    messages: [
+      {
+        role: 'system',
+        content: [
+          'You are a helpful assistant that summarises audio transcripts.',
+          'Summarise the following transcript in plain English.',
+          'Use UK English spelling and grammar.',
+          'Structure your response as:',
+          '1. A brief 2–3 sentence overview.',
+          '2. A bulleted list of the key points.',
+          'Be concise and factual. Do not add information not present in the transcript.'
+        ].join(' ')
+      },
+      {
+        role: 'user',
+        content: transcript
+      }
+    ],
+    max_completion_tokens: 800
+  }
 
   let response
   try {
-    response = await client.path('/chat/completions').post({
-      body: {
-        model: model,
-        messages: [
-          {
-            role: 'system',
-            content: [
-              'You are a helpful assistant that summarises audio transcripts.',
-              'Summarise the following transcript in plain English.',
-              'Use UK English spelling and grammar.',
-              'Structure your response as:',
-              '1. A brief 2–3 sentence overview.',
-              '2. A bulleted list of the key points.',
-              'Be concise and factual. Do not add information not present in the transcript.'
-            ].join(' ')
-          },
-          {
-            role: 'user',
-            content: transcript
-          }
-        ],
-        max_tokens: 800,
-        temperature: 0.3
-      }
+    response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
     })
   } catch (networkErr) {
     throw Object.assign(
@@ -115,15 +153,20 @@ async function summariseTranscript ({ transcript, model } = {}) {
     )
   }
 
-  // Azure REST client returns status as a string
-  const statusCode = parseInt(response.status, 10)
-  if (statusCode < 200 || statusCode >= 300) {
-    const message = response.body?.error?.message ||
-      `Inference API error (HTTP ${response.status})`
-    throw Object.assign(new Error(message), { status: statusCode })
+  let payload = null
+  try {
+    payload = await response.json()
+  } catch (_parseErr) {
+    payload = null
   }
 
-  const content = response.body?.choices?.[0]?.message?.content
+  if (!response.ok) {
+    const message = payload?.error?.message ||
+      `Inference API error (HTTP ${response.status})`
+    throw Object.assign(new Error(message), { status: response.status })
+  }
+
+  const content = payload?.choices?.[0]?.message?.content
   if (!content) {
     throw Object.assign(
       new Error('Inference API returned an empty response'),

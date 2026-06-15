@@ -67,4 +67,4 @@ resource project 'Microsoft.CognitiveServices/accounts/projects@2025-04-01-previ
 output accountName string = account.name
 output projectName string = project.name
 output speechEndpoint string = 'https://${account.name}.cognitiveservices.azure.com'
-output inferenceEndpoint string = 'https://${account.name}.services.ai.azure.com/models'
+output inferenceEndpoint string = 'https://${account.name}.openai.azure.com'
